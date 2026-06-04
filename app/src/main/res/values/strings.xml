@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">AplikasiGeneratorSoal</string>
+    <string name="masukkan_teks">Masukkan Teks...</string>
+    <string name="masukkan_judul">Masukkan Judul</string>
+    <string name="buat_soal_baru">Buat Soal Baru</string>
+    <string name="simpan">Simpan</string>
+    <string name="login">Login</string>
+</resources>

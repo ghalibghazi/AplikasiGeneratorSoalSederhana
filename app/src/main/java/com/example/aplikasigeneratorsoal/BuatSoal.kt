@@ -2,22 +2,16 @@ package com.example.aplikasigeneratorsoal
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Environment
 import android.widget.Button
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
-import okhttp3.Call
-import okhttp3.Callback
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
-import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.IOException
 import android.text.Editable
 import androidx.activity.ComponentActivity
 import androidx.core.view.WindowCompat
@@ -99,64 +93,64 @@ class BuatSoal : ComponentActivity() {
         }
     }
 
-     fun callAPI(inputText: String) {
-         val client = OkHttpClient()
+    fun callAPI(inputText: String) {
+        val client = OkHttpClient()
 
-         // Safety check
-         if (inputText.isNullOrBlank()) {
-             println("Input text is empty.")
-             return
-         }
+        // Safety check
+        if (inputText.isNullOrBlank()) {
+            println("Input text is empty.")
+            return
+        }
 
-         val jsonBody = JSONObject().apply {
-             put("model", "gpt-4o") // <-- Replace with the correct model ID for your use
-             put("messages", JSONArray().apply {
-                 put(JSONObject().apply {
-                     put("role", "user")
-                     put("content", "buat 3 soal pilihan ganda dan jawaban dari paragraf atau topik: $inputText")
-                 })
-             })
-             put("max_tokens", 400)
-             put("temperature", 0.7)
-         }
+        val jsonBody = JSONObject().apply {
+            put("model", "gpt-4o") // <-- Replace with the correct model ID for your use
+            put("messages", JSONArray().apply {
+                put(JSONObject().apply {
+                    put("role", "user")
+                    put("content", "buat 3 soal pilihan ganda dan jawaban dari paragraf atau topik: $inputText")
+                })
+            })
+            put("max_tokens", 400)
+            put("temperature", 0.7)
+        }
 
-         val mediaType = "application/json; charset=utf-8".toMediaType()
-         val requestBody = jsonBody.toString().toRequestBody(mediaType)
+        val mediaType = "application/json; charset=utf-8".toMediaType()
+        val requestBody = jsonBody.toString().toRequestBody(mediaType)
 
-         val request = Request.Builder()
-             .url("https://api.openai.com/v1/chat/completions")
-             .header("Authorization", "") // Replace with your actual API key
-             .post(requestBody)
-             .build()
+        val request = Request.Builder()
+            .url("https://api.openai.com/v1/chat/completions")
+            .header("Authorization", "") // Replace with your actual API key
+            .post(requestBody)
+            .build()
 
-         CoroutineScope(Dispatchers.IO).launch {
-             try {
-                 val response = client.newCall(request).execute()
-                 if (response.isSuccessful) {
-                     val responseString = response.body?.string()
-                     val jsonResponse = JSONObject(responseString)
-                     val result = jsonResponse
-                         .getJSONArray("choices")
-                         .getJSONObject(0)
-                         .getJSONObject("message")
-                         .getString("content")
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = client.newCall(request).execute()
+                if (response.isSuccessful) {
+                    val responseString = response.body?.string()
+                    val jsonResponse = JSONObject(responseString)
+                    val result = jsonResponse
+                        .getJSONArray("choices")
+                        .getJSONObject(0)
+                        .getJSONObject("message")
+                        .getString("content")
 
-                     println("Response:\n$result")
+                    println("Response:\n$result")
 
-                     // Optionally: parseQuestions(result) if needed
-                     // loadQuestions(parseQuestions(result))
+                    // Optionally: parseQuestions(result) if needed
+                    // loadQuestions(parseQuestions(result))
 
-                 } else {
-                     println("API Error: ${response.code} - ${response.message}")
-                     val errorBody = response.body?.string()
-                     println("Error Body: $errorBody")
-                 }
-             } catch (e: Exception) {
-                 e.printStackTrace()
-                 println("Exception: ${e.message}")
-             }
-         }
-     }
+                } else {
+                    println("API Error: ${response.code} - ${response.message}")
+                    val errorBody = response.body?.string()
+                    println("Error Body: $errorBody")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                println("Exception: ${e.message}")
+            }
+        }
+    }
 
     fun String.toEditable(): Editable = Editable.Factory.getInstance().newEditable(this)
 
@@ -183,26 +177,26 @@ class BuatSoal : ComponentActivity() {
         }
     }
 
-     // settext to editsoal
+    // settext to editsoal
     private fun generateContent(inputText: String) {
-         val setting = loadSetting()
-         if (setting != null) {
-             val prompt =
-                 "Buat ${setting.jumlahSoal} soal ${setting.jenisSoal} berbahasa ${setting.bahasaSoal} objektif dengan dimensi kognitif ${setting.tipeHots} dari paragraf atau topik: $inputText"
-             // Call the Gemini API to generate text
-             lifecycleScope.launch {
-                 val response = generativeModel.generateContent(prompt)
-                 val questions = parseQuestions(response.text.toString())
-                 loadQuestions(questions)
+        val setting = loadSetting()
+        if (setting != null) {
+            val prompt =
+                "Buat ${setting.jumlahSoal} soal ${setting.jenisSoal} berbahasa ${setting.bahasaSoal} objektif dengan dimensi kognitif ${setting.tipeHots} dari paragraf atau topik: $inputText"
+            // Call the Gemini API to generate text
+            lifecycleScope.launch {
+                val response = generativeModel.generateContent(prompt)
+                val questions = parseQuestions(response.text.toString())
+                loadQuestions(questions)
 //            soalJson.text = response.text.toString()
-                 jsonText = response.text.toString()
-             }
-         } else {
-             println("Generate Error")
-         }
-     }
+                jsonText = response.text.toString()
+            }
+        } else {
+            println("Generate Error")
+        }
+    }
 
-     //untuk fungsi buat soal baru (gemini)
+    //untuk fungsi buat soal baru (gemini)
     private fun generateNewContent(inputText: String) {
         val prompt = "buat 2 soal pilihan ganda baru dari paragraf: $inputText"
 
@@ -239,17 +233,17 @@ class BuatSoal : ComponentActivity() {
         return questionsList
     }
 
-     private fun loadQuestions(questions: List<Question>) {
-         val stringBuilder = StringBuilder()
-         for (question in questions) {
-             stringBuilder.append("${question.pertanyaan}\n\n") // Question with a newline
+    private fun loadQuestions(questions: List<Question>) {
+        val stringBuilder = StringBuilder()
+        for (question in questions) {
+            stringBuilder.append("${question.pertanyaan}\n\n") // Question with a newline
 
-             for (option in question.pilihan) {
-                 stringBuilder.append("\t- $option\n") // Indented options with a dash
-             }
+            for (option in question.pilihan) {
+                stringBuilder.append("\t- $option\n") // Indented options with a dash
+            }
 
-             stringBuilder.append("\nJawaban: ${question.jawaban}\n\n") // Answer with a newline
-         }
-         soal.text = stringBuilder.toString()
-     }
+            stringBuilder.append("\nJawaban: ${question.jawaban}\n\n") // Answer with a newline
+        }
+        soal.text = stringBuilder.toString()
+    }
 }
